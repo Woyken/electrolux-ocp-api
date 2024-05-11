@@ -163,24 +163,53 @@ model Appliance {
   connectionState: string;
 }
 
-model AccType {
-  access: "readwrite" | "read";
-  type: "int" | "boolean" | "string" | "careMaintenance";
-  triggers?: [
-    {
-      action: Record<{
-        access: "write" | "read";
-        values?: Record<{}>;
-        disabled?: boolean;
-      }>,
-      condition: {
-        operand_1: string | "value";
-        operand_2: string | "value";
-        operator: "eq";
-      };
-    }
-  ];
-  values?: Record<{}> | {};
+model TriggerConditionAndOr {
+  operand_1: TriggerConditionAndOr | TriggerConditionCompare;
+  operand_2: TriggerConditionAndOr | TriggerConditionCompare;
+  operator: "and" | "or";
+}
+
+model TriggerConditionCompare {
+  // TODO make generic, if op1 is value, op2 will match parent type
+  operand_1: "value" | string;
+
+  operand_2: string | boolean;
+  operator: "eq" | "lt" | "ge" | "ne";
+}
+
+model Capability {
+  access: "read" | "write" | "readwrite";
+  type:
+    | "int"
+    | "number"
+    | "boolean"
+    | "string"
+    | "careMaintenance"
+    | "alert"
+    | "complex";
+  triggers?: {
+    action: Record<{
+      access: "read" | "write" | "readwrite" | "default";
+      values?: Record<{}>;
+      default?: string | boolean;
+    } | {
+      disabled: boolean;
+    }>;
+    condition: TriggerConditionAndOr | TriggerConditionCompare;
+  }[];
+  values?: Record<{} | Record<Capability & {
+    // todo exclude triggers and type
+    disabled: boolean;
+  }> | {
+    disabled: boolean;
+  }> | {};
+
+  // TODO, convert to union with type: "number"?
+  default?: int32 | boolean | string;
+
+  max?: int32;
+  min?: int32;
+  step?: int32;
 }
 
 @useAuth([MyOAuth2, ApiKeyAuth<ApiKeyLocation.header, "x-api-key">])
@@ -196,7 +225,9 @@ interface AppliancesApi {
 
   @route("appliance/api/v2/appliances/914550543_01:24000076-443E0737CC42/capabilities")
   @get
-  getCapabilities(): ApplianceCapabilities;
+  getCapabilities(): Record<Capability> | {
+    networkInterface: Record<Capability>;
+  };
 }
 
 @error
