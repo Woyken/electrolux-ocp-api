@@ -164,17 +164,34 @@ model Appliance {
 }
 
 model TriggerConditionAndOr {
-  operand_1: TriggerConditionAndOr | TriggerConditionCompare;
-  operand_2: TriggerConditionAndOr | TriggerConditionCompare;
+  operand_1: TriggerConditionAndOr | TriggerConditionCompareWithCurrentValue;
+  operand_2: TriggerConditionAndOr | TriggerConditionCompareWithCurrentValue;
   operator: "and" | "or";
 }
 
 model TriggerConditionCompare {
-  // TODO make generic, if op1 is value, op2 will match parent type
-  operand_1: "value" | string;
-
+  operand_1: string;
   operand_2: string | boolean;
   operator: "eq" | "lt" | "ge" | "ne";
+}
+
+alias TriggerConditionCompareWithCurrentValue<DefaultType = string | boolean> = TriggerConditionCompare | TriggerConditionCompareOp1Value<DefaultType>;
+
+model TriggerConditionCompareOp1Value<Op2Type = string | boolean> {
+  operand_1: "value";
+  operand_2: Op2Type;
+  operator: "eq" | "lt" | "ge" | "ne";
+}
+
+model CapabilityTrigger<DefaultType = string | boolean> {
+  action: Record<{
+    access: "read" | "write" | "readwrite" | "default";
+    values?: Record<{}>;
+    default?: DefaultType;
+  } | {
+    disabled: boolean;
+  }>;
+  condition: TriggerConditionAndOr | TriggerConditionCompareWithCurrentValue<DefaultType>;
 }
 
 model Capability {
@@ -187,16 +204,7 @@ model Capability {
     | "careMaintenance"
     | "alert"
     | "complex";
-  triggers?: {
-    action: Record<{
-      access: "read" | "write" | "readwrite" | "default";
-      values?: Record<{}>;
-      default?: string | boolean;
-    } | {
-      disabled: boolean;
-    }>;
-    condition: TriggerConditionAndOr | TriggerConditionCompare;
-  }[];
+  triggers?: CapabilityTrigger[];
   values?: Record<{} | Record<Capability & {
     // todo exclude triggers and type
     disabled: boolean;
@@ -211,6 +219,18 @@ model Capability {
   min?: int32;
   step?: int32;
 }
+
+model BaseCapability {
+  access: "read" | "write" | "readwrite";
+}
+
+model StrCapability {
+  type: "string";
+  default?: string;
+  triggers?: CapabilityTrigger<string>[];
+}
+
+alias CombinedCapability = StrCapability;//TODO
 
 @useAuth([MyOAuth2, ApiKeyAuth<ApiKeyLocation.header, "x-api-key">])
 @tag("Applicance")
