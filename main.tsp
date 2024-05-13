@@ -183,9 +183,20 @@ model TriggerConditionCompareOp1Value<Op2Type = string | boolean> {
   operator: "eq" | "lt" | "ge" | "ne";
 }
 
+enum Access {
+  read,
+  write,
+  readwrite,
+}
+
+enum AccessWithDefault {
+  ...Access,
+  default,
+}
+
 model CapabilityTrigger<DefaultType = string | boolean> {
   action: Record<{
-    access: "read" | "write" | "readwrite" | "default";
+    access: AccessWithDefault;
     values?: Record<{}>;
     default?: DefaultType;
   } | {
@@ -194,60 +205,76 @@ model CapabilityTrigger<DefaultType = string | boolean> {
   condition: TriggerConditionAndOr | TriggerConditionCompareWithCurrentValue<DefaultType>;
 }
 
-model Capability {
-  access: "read" | "write" | "readwrite";
-  type:
-    | "int"
-    | "number"
-    | "boolean"
-    | "string"
-    | "careMaintenance"
-    | "alert"
-    | "complex";
-  triggers?: CapabilityTrigger[];
-  values?: Record<{} | Record<Capability & {
-    // todo exclude triggers and type
+model BaseCapability<
+  DefaultType = string | boolean | int32,
+  TriggersType extends CapabilityTrigger<DefaultType>[] | never = CapabilityTrigger<DefaultType>[]
+> {
+  access: Access;
+  default?: DefaultType;
+  triggers?: TriggersType;
+  // TODO too much nesting, generated types are too deep.
+  // TODO extract some generic types to top level
+  values?: Record<{} | Record<BaseCapability<DefaultType, never> & {
     disabled: boolean;
   }> | {
     disabled: boolean;
   }> | {};
+}
 
-  // TODO, convert to union with type: "number"?
-  default?: int32 | boolean | string;
+model StrCapability {
+  type: "string";
+  ...BaseCapability<string>;
+}
 
+model NumberCapability {
+  type: "number";
+  ...BaseCapability<int32>;
   max?: int32;
   min?: int32;
   step?: int32;
 }
 
-model BaseCapability {
-  access: "read" | "write" | "readwrite";
+model IntCapability {
+  type: "int";
+  ...BaseCapability<int32>;
+  max?: int32;
+  min?: int32;
+  step?: int32;
 }
 
-model StrCapability {
-  type: "string";
-  default?: string;
-  triggers?: CapabilityTrigger<string>[];
+model BooleanCapability {
+  type: "boolean";
+  ...BaseCapability<boolean>;
 }
 
-alias CombinedCapability = StrCapability;//TODO
+model OtherCapability {
+  type: "careMaintenance" | "alert" | "complex";
+  ...BaseCapability<boolean | string | int32>;
+}
+
+alias CombinedCapability =
+  | StrCapability
+  | IntCapability
+  | NumberCapability
+  | BooleanCapability
+  | OtherCapability;
 
 @useAuth([MyOAuth2, ApiKeyAuth<ApiKeyLocation.header, "x-api-key">])
 @tag("Applicance")
 interface AppliancesApi {
   @route("/appliance/api/v2/appliances")
   @get
-  getList(@query includeMetadata: boolean): Appliance[];
+  getList(@query includeMetadata?: boolean): Appliance[];
 
-  @route("appliance/api/v2/appliances/914550543_01:24000076-443E0737CC42")
+  @route("appliance/api/v2/appliances/{applianceId}")
   @get
-  getById(): Appliance;
+  getById(@path applianceId: string): Appliance;
 
-  @route("appliance/api/v2/appliances/914550543_01:24000076-443E0737CC42/capabilities")
+  @route("appliance/api/v2/appliances/{applianceId}/capabilities")
   @get
-  getCapabilities(): Record<Capability> | {
-    networkInterface: Record<Capability>;
-  };
+  getCapabilities(@path applianceId: string): (Record<CombinedCapability> | {
+    networkInterface: Record<CombinedCapability>;
+  })[];
 }
 
 @error
