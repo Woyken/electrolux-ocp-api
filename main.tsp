@@ -198,7 +198,7 @@ model CapabilityTrigger<DefaultType = string | boolean> {
   action: Record<{
     access: AccessWithDefault;
     values?: Record<{}>;
-    default?: DefaultType;
+    default?: string | boolean | int32;
   } | {
     disabled: boolean;
   }>;
