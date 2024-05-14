@@ -272,9 +272,9 @@ interface AppliancesApi {
 
   @route("appliance/api/v2/appliances/{applianceId}/capabilities")
   @get
-  getCapabilities(@path applianceId: string): (Record<CombinedCapability> | {
+  getCapabilities(@path applianceId: string): Record<CombinedCapability> | {
     networkInterface: Record<CombinedCapability>;
-  })[];
+  };
 }
 
 @error
