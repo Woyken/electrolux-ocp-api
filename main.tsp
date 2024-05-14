@@ -201,6 +201,8 @@ model CapabilityTrigger<DefaultType extends string | boolean | int32> {
     default?: string | boolean | int32;
   } | {
     disabled: boolean;
+  } | {
+    default: string | boolean | int32;
   }>;
   condition: TriggerConditionAndOr | TriggerConditionCompareWithCurrentValue<DefaultType>;
 }
