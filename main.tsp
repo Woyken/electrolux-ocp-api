@@ -212,13 +212,14 @@ model BaseCapability<
   access: Access;
   default?: DefaultType;
   triggers?: TriggersType;
+
   // TODO too much nesting, generated types are too deep.
   // TODO extract some generic types to top level
-  values?: Record<{} | Record<BaseCapability<DefaultType, never> & {
-    disabled: boolean;
+  values?: Record<Record<BaseCapability<DefaultType, never> & {
+    disabled?: boolean;
   }> | {
     disabled: boolean;
-  }> | {};
+  }>;
 }
 
 model StrCapability {
