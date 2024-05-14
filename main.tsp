@@ -194,7 +194,7 @@ enum AccessWithDefault {
   default,
 }
 
-model CapabilityTrigger<DefaultType = string | boolean> {
+model CapabilityTrigger<DefaultType extends string | boolean | int32> {
   action: Record<{
     access: AccessWithDefault;
     values?: Record<{}>;
@@ -205,31 +205,41 @@ model CapabilityTrigger<DefaultType = string | boolean> {
   condition: TriggerConditionAndOr | TriggerConditionCompareWithCurrentValue<DefaultType>;
 }
 
+model CapabilityTriggerStr is CapabilityTrigger<string>[];
+model CapabilityTriggerInt is CapabilityTrigger<int32>[];
+model CapabilityTriggerBool is CapabilityTrigger<boolean>[];
+model CapabilityTriggerOther is CapabilityTrigger<string | boolean | int32>[];
+alias DisabledOptional = {
+  disabled?: boolean;
+};
+
+model BaseCapabilityForValues {
+  ...BaseCapability<never, string | boolean | int32, never>;
+  ...DisabledOptional;
+}
+
 model BaseCapability<
-  DefaultType = string | boolean | int32,
-  TriggersType extends CapabilityTrigger<DefaultType>[] | never = CapabilityTrigger<DefaultType>[]
+  AccessOrNever extends Access | never,
+  DefaultType extends string | boolean | int32,
+  TriggersType extends CapabilityTrigger<string | boolean | int32>[] | never
 > {
-  access: Access;
+  access: AccessOrNever;
   default?: DefaultType;
   triggers?: TriggersType;
 
   // TODO too much nesting, generated types are too deep.
   // TODO extract some generic types to top level
-  values?: Record<Record<BaseCapability<DefaultType, never> & {
-    disabled?: boolean;
-  }> | {
-    disabled: boolean;
-  }>;
+  values?: Record<Record<BaseCapabilityForValues>> | Record<DisabledOptional>;
 }
 
 model StrCapability {
   type: "string";
-  ...BaseCapability<string>;
+  ...BaseCapability<Access, string, CapabilityTriggerStr>;
 }
 
 model NumberCapability {
   type: "number";
-  ...BaseCapability<int32>;
+  ...BaseCapability<Access, int32, CapabilityTriggerInt>;
   max?: int32;
   min?: int32;
   step?: int32;
@@ -237,7 +247,7 @@ model NumberCapability {
 
 model IntCapability {
   type: "int";
-  ...BaseCapability<int32>;
+  ...BaseCapability<Access, int32, CapabilityTriggerInt>;
   max?: int32;
   min?: int32;
   step?: int32;
@@ -245,12 +255,12 @@ model IntCapability {
 
 model BooleanCapability {
   type: "boolean";
-  ...BaseCapability<boolean>;
+  ...BaseCapability<Access, boolean, CapabilityTriggerBool>;
 }
 
 model OtherCapability {
   type: "careMaintenance" | "alert" | "complex";
-  ...BaseCapability<boolean | string | int32>;
+  ...BaseCapability<Access, boolean | string | int32, CapabilityTriggerOther>;
 }
 
 alias CombinedCapability =
@@ -273,9 +283,9 @@ interface AppliancesApi {
 
   @route("appliance/api/v2/appliances/{applianceId}/capabilities")
   @get
-  getCapabilities(@path applianceId: string): Record<CombinedCapability> | {
-    networkInterface: Record<CombinedCapability>;
-  };
+  getCapabilities(
+    @path applianceId: string,
+  ): Record<CombinedCapability> | Record<Record<CombinedCapability>>;
 }
 
 @error
