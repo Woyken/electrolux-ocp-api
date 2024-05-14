@@ -287,7 +287,7 @@ interface AppliancesApi {
   @get
   getCapabilities(
     @path applianceId: string,
-  ): Record<CombinedCapability> | Record<Record<CombinedCapability>>;
+  ): Record<CombinedCapability | Record<CombinedCapability>>;
 }
 
 @error
