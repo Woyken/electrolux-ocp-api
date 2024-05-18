@@ -288,6 +288,21 @@ interface AppliancesApi {
   getCapabilities(
     @path applianceId: string,
   ): Record<CombinedCapability | Record<CombinedCapability>>;
+
+  @route("appliance/api/v2/appliances/info")
+  @get
+  getByIds(
+    @body applianceIdsList: {
+      applianceIds: string[];
+    },
+  ): Appliance[];
+
+  @route("appliance/api/v2/appliances/{applianceId}/command")
+  @put
+  executeCommand(
+    @path applianceId: string,
+    @body command: Record<unknown>,
+  ): unknown;
 }
 
 @error
