@@ -2,6 +2,9 @@
   "name": "electrolux-ocp-api",
   "version": "0.1.0",
   "type": "module",
+  "scripts": {
+    "build": "tsp compile ."
+  },
   "dependencies": {
     "@typespec/compiler": "latest",
     "@typespec/http": "latest",
