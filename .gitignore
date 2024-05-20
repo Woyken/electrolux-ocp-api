@@ -1,2 +1,4 @@
 /node_modules
 /tsp-output
+.env.local
+.env.*.local

@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "build": "tsp compile ."
+    "build": "tsp compile .",
+    "compile-zod-client": "openapi-zod-client ./tsp-output/@typespec/openapi3/openapi.yaml",
+    "test": "vitest"
   },
   "dependencies": {
     "@typespec/compiler": "latest",
@@ -13,6 +15,7 @@
   },
   "private": true,
   "devDependencies": {
-    "openapi-zod-client": "^1.18.1"
+    "openapi-zod-client": "^1.18.1",
+    "vitest": "^1.6.0"
   }
 }

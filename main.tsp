@@ -116,6 +116,22 @@ model Country {
   dataCenter: string;
 }
 
+enum Brand {
+  aeg,
+  electrolux,
+  frigidaire,
+  multibrand,
+}
+
+model IdentityProvider {
+  domain: string;
+  apiKey: string;
+  brand: Brand;
+  httpRegionalBaseUrl: url;
+  webSocketRegionalBaseUrl: url;
+  dataCenter: string;
+}
+
 @useAuth(NoAuth)
 @tag("Token")
 interface TokenApi {
@@ -134,6 +150,10 @@ interface CurrentUserApi {
   @route("one-account-user/api/v1/countries")
   @get
   getCountries(): Country[];
+
+  @route("one-account-user/api/v1/identity-providers")
+  @get
+  getIdentityProviders(@query brand?: Brand, @query email?: string): IdentityProvider[];
 }
 
 union AppliancePropertyMetadata {
