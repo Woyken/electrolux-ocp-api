@@ -15,6 +15,7 @@
   },
   "private": true,
   "devDependencies": {
+    "crypto-js": "^4.2.0",
     "openapi-zod-client": "^1.18.1",
     "vitest": "^1.6.0"
   }
