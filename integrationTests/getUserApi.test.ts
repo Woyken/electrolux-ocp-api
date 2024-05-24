@@ -17,19 +17,19 @@ test("is valid user response", async () => {
         "Content-Type": "application/json",
         "User-Agent": "PostmanRuntime/7.39.0",
       },
-    }
+    },
   );
   const clientCredToken = clientCredentialsTokenResponse.accessToken;
   const identityProviders = await apiClient.CurrentUserApi_getIdentityProviders(
     {
       queries: { brand: "aeg", email: import.meta.env.VITE_USER1_USERNAME },
-    }
+    },
   );
   const identityProvider = identityProviders[0];
 
   const formData = new FormData();
-  formData.append("apiKey", identityProvider.apiKey)
-  formData.append("format", "json")
+  formData.append("apiKey", identityProvider.apiKey);
+  formData.append("format", "json");
   // TODO all others
   // TODO use response variables for the url...
   const idsResp: { gmid: string; gcid: string; ucid: string } = await fetch(
@@ -37,7 +37,7 @@ test("is valid user response", async () => {
     {
       method: "post",
       // TODO form data...
-    }
+    },
   ).then((x) => x.json());
 
   const loginResp: {
@@ -53,7 +53,7 @@ test("is valid user response", async () => {
   const strictEncode = (str) =>
     encodeURIComponent(str).replace(
       /[!'()*]/g,
-      (x) => `%${x.charCodeAt(0).toString(16).toUpperCase()}`
+      (x) => `%${x.charCodeAt(0).toString(16).toUpperCase()}`,
     );
 
   const nonce = `${Date.now()}_${Math.floor(Math.random() * 1000000000)}`;
@@ -61,7 +61,7 @@ test("is valid user response", async () => {
 
   const sig = HmacSHA1(
     `POST&${strictEncode("https://accounts.eu1.gigya.com/accounts.getJWT")}&${strictEncode(`apiKey=${identityProvider.apiKey}&fields=country&format=json&gmid=${idsResp.gmid}&httpStatusCodes=false&nonce=${nonce}&oauth_token=${loginResp.sessionInfo.sessionToken}&sdk=Android_6.2.1&targetEnv=mobile&timestamp=${timestampSeconds}&ucid=${idsResp.ucid}`)}`,
-    CryptoJS.enc.Base64.parse(loginResp.sessionInfo.sessionSecret)
+    CryptoJS.enc.Base64.parse(loginResp.sessionInfo.sessionSecret),
   ).toString(CryptoJS.enc.Base64);
 
   const getJwtResp: { idToken: string } = await fetch(
@@ -69,7 +69,7 @@ test("is valid user response", async () => {
     {
       method: "post",
       // TODO form data...
-    }
+    },
   ).then((x) => x.json());
 
   // POST https://api.eu.ocp.electrolux.one/one-account-authorization/api/v1/token
@@ -81,7 +81,7 @@ test("is valid user response", async () => {
   // }
 
   const regionalApiClient = createApiClient(
-    identityProvider.httpRegionalBaseUrl
+    identityProvider.httpRegionalBaseUrl,
   );
 
   const userToken = await regionalApiClient.TokenApi_tokenEndpoint({
@@ -94,7 +94,7 @@ test("is valid user response", async () => {
   await expect(
     apiClient.CurrentUserApi_getUser({
       headers: { Authorization: userToken.accessToken },
-    })
+    }),
   ).resolves.toBeTruthy();
   //   const user = await getUserPromise;
   //   // api.expect(import.meta.env.VITE_ELECTROLUX_HOSTNAME).toBeTruthy();
