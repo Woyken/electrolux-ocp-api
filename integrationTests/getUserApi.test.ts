@@ -144,14 +144,6 @@ test("is valid user response", async () => {
     .then((x) => x.json())
     .then(gigayaAccountsGetJwtSchema.parse);
 
-  // POST https://api.eu.ocp.electrolux.one/one-account-authorization/api/v1/token
-  // {
-  //     "grantType": "urn:ietf:params:oauth:grant-type:token-exchange",
-  //     "clientId": "AEGOneApp",
-  //     "idToken": "{{idToken}}",
-  //     "scope": ""
-  // }
-
   const regionalApiClient = createApiClient(
     identityProvider.httpRegionalBaseUrl
   );
