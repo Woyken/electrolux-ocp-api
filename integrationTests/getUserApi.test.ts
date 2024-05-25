@@ -156,7 +156,7 @@ test("is valid user response", async () => {
   });
 
   await expect(
-    apiClient.CurrentUserApi_getUser({
+    regionalApiClient.CurrentUserApi_getUser({
       headers: {
         Authorization: `Bearer ${userToken.accessToken}`,
         "x-api-key": import.meta.env.VITE_X_API_KEY,
