@@ -155,6 +155,7 @@ model IdentityProvider {
   dataCenter: string;
 }
 
+@doc("used in header `x-api-key`")
 enum ElectroluxApiKey {
   Electrolux: "2AMqwEV5MqVhTKrRCyYfVF8gmKrd2rAmp7cUsfky",
   AEG: "PEdfAP7N7sUc95GJPePDU54e2Pybbt6DZtdww7dz",
@@ -173,18 +174,17 @@ interface TokenApi {
 interface CurrentUserApi {
   @route("/one-account-user/api/v1/users/current")
   @get
-  getUser(@header `x-api-key`: ElectroluxApiKey): User;
+  getUser(): User;
 
   @route("one-account-user/api/v1/countries")
   @get
-  getCountries(@header `x-api-key`: ElectroluxApiKey): Country[];
+  getCountries(): Country[];
 
   @route("one-account-user/api/v1/identity-providers")
   @get
   getIdentityProviders(
     @query brand?: Brand,
     @query email?: string,
-    @header `x-api-key`: ElectroluxApiKey,
   ): IdentityProvider[];
 }
 
@@ -329,23 +329,16 @@ alias CombinedCapability =
 interface AppliancesApi {
   @route("/appliance/api/v2/appliances")
   @get
-  getList(
-    @query includeMetadata?: boolean,
-    @header `x-api-key`: ElectroluxApiKey,
-  ): Appliance[];
+  getList(@query includeMetadata?: boolean): Appliance[];
 
   @route("appliance/api/v2/appliances/{applianceId}")
   @get
-  getById(
-    @path applianceId: string,
-    @header `x-api-key`: ElectroluxApiKey,
-  ): Appliance;
+  getById(@path applianceId: string): Appliance;
 
   @route("appliance/api/v2/appliances/{applianceId}/capabilities")
   @get
   getCapabilities(
     @path applianceId: string,
-    @header `x-api-key`: ElectroluxApiKey,
   ): Record<CombinedCapability | Record<CombinedCapability>>;
 
   @route("appliance/api/v2/appliances/info")
@@ -354,7 +347,6 @@ interface AppliancesApi {
     @body applianceIdsList: {
       applianceIds: string[];
     },
-    @header `x-api-key`: ElectroluxApiKey,
   ): Appliance[];
 
   @route("appliance/api/v2/appliances/{applianceId}/command")
@@ -362,7 +354,6 @@ interface AppliancesApi {
   executeCommand(
     @path applianceId: string,
     @body command: Record<unknown>,
-    @header `x-api-key`: ElectroluxApiKey,
   ): unknown;
 }
 

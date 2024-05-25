@@ -5,7 +5,13 @@ import * as CryptoJS from "crypto-js";
 import * as z from "zod";
 
 test("is valid user response", async () => {
-  const apiClient = createApiClient(import.meta.env.VITE_ELECTROLUX_HOSTNAME);
+  const apiClient = createApiClient(import.meta.env.VITE_ELECTROLUX_HOSTNAME, {
+    axiosConfig: {
+      headers: {
+        "x-api-key": import.meta.env.VITE_X_API_KEY,
+      },
+    },
+  });
   const clientCredentialsTokenResponse = await apiClient.TokenApi_tokenEndpoint(
     {
       clientId: "AEGOneApp",
@@ -25,7 +31,6 @@ test("is valid user response", async () => {
       queries: { brand: "aeg", email: import.meta.env.VITE_USER1_USERNAME },
       headers: {
         Authorization: `Bearer ${clientCredentialsTokenResponse.accessToken}`,
-        "x-api-key": import.meta.env.VITE_X_API_KEY,
       },
     }
   );
@@ -145,7 +150,14 @@ test("is valid user response", async () => {
     .then(gigayaAccountsGetJwtSchema.parse);
 
   const regionalApiClient = createApiClient(
-    identityProvider.httpRegionalBaseUrl
+    identityProvider.httpRegionalBaseUrl,
+    {
+      axiosConfig: {
+        headers: {
+          "x-api-key": import.meta.env.VITE_X_API_KEY,
+        },
+      },
+    }
   );
 
   const userToken = await regionalApiClient.TokenApi_tokenEndpoint({
@@ -159,7 +171,6 @@ test("is valid user response", async () => {
     regionalApiClient.CurrentUserApi_getUser({
       headers: {
         Authorization: `Bearer ${userToken.accessToken}`,
-        "x-api-key": import.meta.env.VITE_X_API_KEY,
       },
     })
   ).resolves.toBeTruthy();
