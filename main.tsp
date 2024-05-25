@@ -155,6 +155,11 @@ model IdentityProvider {
   dataCenter: string;
 }
 
+enum ElectroluxApiKey {
+  Electrolux: "2AMqwEV5MqVhTKrRCyYfVF8gmKrd2rAmp7cUsfky",
+  AEG: "PEdfAP7N7sUc95GJPePDU54e2Pybbt6DZtdww7dz",
+}
+
 @useAuth(NoAuth)
 @tag("Token")
 interface TokenApi {
@@ -168,15 +173,19 @@ interface TokenApi {
 interface CurrentUserApi {
   @route("/one-account-user/api/v1/users/current")
   @get
-  getUser(): User;
+  getUser(@header `x-api-key`: ElectroluxApiKey): User;
 
   @route("one-account-user/api/v1/countries")
   @get
-  getCountries(): Country[];
+  getCountries(@header `x-api-key`: ElectroluxApiKey): Country[];
 
   @route("one-account-user/api/v1/identity-providers")
   @get
-  getIdentityProviders(@query brand?: Brand, @query email?: string): IdentityProvider[];
+  getIdentityProviders(
+    @query brand?: Brand,
+    @query email?: string,
+    @header `x-api-key`: ElectroluxApiKey,
+  ): IdentityProvider[];
 }
 
 union AppliancePropertyMetadata {
@@ -320,16 +329,23 @@ alias CombinedCapability =
 interface AppliancesApi {
   @route("/appliance/api/v2/appliances")
   @get
-  getList(@query includeMetadata?: boolean): Appliance[];
+  getList(
+    @query includeMetadata?: boolean,
+    @header `x-api-key`: ElectroluxApiKey,
+  ): Appliance[];
 
   @route("appliance/api/v2/appliances/{applianceId}")
   @get
-  getById(@path applianceId: string): Appliance;
+  getById(
+    @path applianceId: string,
+    @header `x-api-key`: ElectroluxApiKey,
+  ): Appliance;
 
   @route("appliance/api/v2/appliances/{applianceId}/capabilities")
   @get
   getCapabilities(
     @path applianceId: string,
+    @header `x-api-key`: ElectroluxApiKey,
   ): Record<CombinedCapability | Record<CombinedCapability>>;
 
   @route("appliance/api/v2/appliances/info")
@@ -338,6 +354,7 @@ interface AppliancesApi {
     @body applianceIdsList: {
       applianceIds: string[];
     },
+    @header `x-api-key`: ElectroluxApiKey,
   ): Appliance[];
 
   @route("appliance/api/v2/appliances/{applianceId}/command")
@@ -345,6 +362,7 @@ interface AppliancesApi {
   executeCommand(
     @path applianceId: string,
     @body command: Record<unknown>,
+    @header `x-api-key`: ElectroluxApiKey,
   ): unknown;
 }
 
