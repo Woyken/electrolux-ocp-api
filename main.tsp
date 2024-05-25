@@ -1,9 +1,30 @@
 import "@typespec/http";
+import "@typespec/openapi3";
 
 using TypeSpec.Http;
+using OpenAPI;
 
+@doc("""
+Electrolux OCP API
+
+Reverse engineered API from Electrolux App
+
+Authorization flow:
+
+`POST /one-account-authorization/api/v1/token` with `client_credentials`
+
+`GET /one-account-user/api/v1/identity-providers` using client credentials token (will retrieve gigya url)
+
+`POST https://socialize.eu1.gigya.com/socialize.getIDs` with api key from previous response
+
+`POST https://accounts.eu1.gigya.com/accounts.login` with api key, username, password, and ids from previous response
+
+`POST https://accounts.eu1.gigya.com/accounts.getJWT` with api key, session toke and ids - will return `id_token`
+
+`POST /one-account-authorization/api/v1/token` with `urn:ietf:params:oauth:grant-type:token-exchange` - will return `accessToken` that will be used in all requests
+""")
 @service({
-  title: "Widget Service",
+  title: "Electrolux OCP service",
 })
 namespace ElectroluxOCP;
 
@@ -102,6 +123,8 @@ model ClientCredentialsTokenBody {
   scope: "";
 }
 
+@discriminator("grantType")
+@oneOf
 union TokenBody {
   refreshToken: RefreshTokenBody,
   tokenExchange: TokenExchangeBody,
